@@ -27,7 +27,8 @@ async def async_setup(hass: HomeAssistant, hass_config):
             await coordinator.async_auth()
             await coordinator.async_refresh()
             if coordinator.last_update_success:
-                _LOGGER.debug("Successful to update data, now loading entities")
+                _LOGGER.debug(
+                    "Successful to update data, now loading entities")
                 hass.async_create_task(discovery.async_load_platform(
                     hass, "sensor", DOMAIN, config, hass_config))
                 return
@@ -37,7 +38,8 @@ async def async_setup(hass: HomeAssistant, hass_config):
         except Exception:
             _LOGGER.error(f"Field to update data, retry after 30 seconds")
             pass
-        async_track_point_in_utc_time(hass, async_load_entities, dt_util.utcnow() + timedelta(seconds=30))
+        async_track_point_in_utc_time(
+            hass, async_load_entities, dt_util.utcnow() + timedelta(seconds=30))
 
     async_track_point_in_utc_time(hass, async_load_entities, dt_util.utcnow())
     return True

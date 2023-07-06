@@ -7,5 +7,7 @@
   "iot_class": "cloud_polling",
   "dependencies": [],
   "requirements": [],
-  "codeowners": ["@georgezhao2010"]
+  "codeowners": [
+    "@georgezhao2010"
+  ]
 }

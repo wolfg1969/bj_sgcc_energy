@@ -68,12 +68,13 @@ class SGCCData:
         r = await self._session.get(AUTH_URL, headers=headers, allow_redirects=False, timeout=10)
         if r.status == 200 or r.status == 302:
             response_headers = self.tuple2list(r.raw_headers)
-            location = response_headers.get("Location") #这个OpenID有问题
+            location = response_headers.get("Location")  # 这个OpenID有问题
             if location and str.find(location, "connect_redirect") > 0:
                 raise AuthFailed("Invalid open-id")
         else:
             _LOGGER.error(f"async_get_token response status_code = {r.status}")
-            raise AuthFailed(f"Authentication unexpected response code {r.status}")
+            raise AuthFailed(
+                f"Authentication unexpected response code {r.status}")
 
     def commonHeaders(self):
         headers = {
@@ -106,7 +107,8 @@ class SGCCData:
             else:
                 raise InvalidData(f"async_get_ConsNo error: {result['msg']}")
         else:
-            raise InvalidData(f"async_get_ConsNo response status_code = {r.status_code}")
+            raise InvalidData(
+                f"async_get_ConsNo response status_code = {r.status_code}")
 
     async def aysnc_get_balance(self, consNo):
         headers = self.commonHeaders()
@@ -119,7 +121,8 @@ class SGCCData:
             else:
                 raise InvalidData(f"get_balance error:{result['msg']}")
         else:
-            raise InvalidData(f"get_balance response status_code = {r.status_code}")
+            raise InvalidData(
+                f"get_balance response status_code = {r.status_code}")
 
     async def async_get_detail(self, consNo):
         headers = self.commonHeaders()
@@ -141,17 +144,22 @@ class SGCCData:
                         if int(data["billDetails"][n]["LEVEL_NUM"]) == self._info[consNo]["current_level"]:
                             self._info[consNo]["current_price"] = data["billDetails"][n]["KWH_PRC"]
                             break
-                    key = LEVEL_CONSUME[self._info[consNo]["current_level"] - 1]
-                    self._info[consNo]["current_level_consume"] = int(data[key])
+                    key = LEVEL_CONSUME[self._info[consNo]
+                                        ["current_level"] - 1]
+                    self._info[consNo]["current_level_consume"] = int(
+                        data[key])
                     if self._info[consNo]["current_level"] < 3:
-                        key = LEVEL_REMAIN[self._info[consNo]["current_level"] - 1]
-                        self._info[consNo]["current_level_remain"] = int(data[key])
+                        key = LEVEL_REMAIN[self._info[consNo]
+                                           ["current_level"] - 1]
+                        self._info[consNo]["current_level_remain"] = int(
+                            data[key])
                     else:
                         self._info[consNo]["current_level_remain"] = "∞"
                 else:
                     bill_range = []
                     for n in range(0, bill_size):
-                        bill_range.append(data["billDetails"][n]["PRC_TS_NAME"])
+                        bill_range.append(
+                            data["billDetails"][n]["PRC_TS_NAME"])
                     pgv_type = get_pgv_type(bill_range)
                     for n in range(0, bill_size):
                         if data["billDetails"][n]["PRC_TS_NAME"] == pgv_type:
@@ -192,24 +200,31 @@ class SGCCData:
                                 period = month
                                 break
                     if i == 0:
-                        self._info[consNo]["history"] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                        self._info[consNo]["history"] = [
+                            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                         for n in range(period):
                             self._info[consNo]["history"][n] = {}
                             self._info[consNo]["history"][n]["name"] = monthBills[period - n - 1]["AMT_YM"]
-                            self._info[consNo]["history"][n]["consume"] = monthBills[period - n - 1]["SUM_ELEC"]
-                            self._info[consNo]["history"][n]["consume_bill"] = monthBills[period - n - 1]["SUM_ELECBILL"]
+                            self._info[consNo]["history"][n]["consume"] = monthBills[period -
+                                                                                     n - 1]["SUM_ELEC"]
+                            self._info[consNo]["history"][n]["consume_bill"] = monthBills[period -
+                                                                                          n - 1]["SUM_ELECBILL"]
                     else:
                         for n in range(12 - period):
                             self._info[consNo]["history"][11 - n] = {}
-                            self._info[consNo]["history"][11 - n]["name"] = monthBills[period + n]["AMT_YM"]
-                            self._info[consNo]["history"][11 - n]["consume"] = monthBills[period + n]["SUM_ELEC"]
-                            self._info[consNo]["history"][11 - n]["consume_bill"] = monthBills[period + n]["SUM_ELECBILL"]
+                            self._info[consNo]["history"][11 -
+                                                          n]["name"] = monthBills[period + n]["AMT_YM"]
+                            self._info[consNo]["history"][11 -
+                                                          n]["consume"] = monthBills[period + n]["SUM_ELEC"]
+                            self._info[consNo]["history"][11 -
+                                                          n]["consume_bill"] = monthBills[period + n]["SUM_ELECBILL"]
                 else:
                     _LOGGER.error(f"get_monthly_bill error: {result['msg']}")
                     ret = False
                     break
             else:
-                _LOGGER.error(f"get_monthly_bill response status_code = {r.status_code}, params = {data}")
+                _LOGGER.error(
+                    f"get_monthly_bill response status_code = {r.status_code}, params = {data}")
                 ret = False
                 break
         return ret
@@ -254,7 +269,6 @@ class SGCCData:
                 self.get_monthly_bill(consNo),
                 self.get_daily_bills(consNo)
             ]
-            await asyncio.wait(tasks)
+            await asyncio.gather(*tasks)
             _LOGGER.debug(f"Data {self._info}")
         return self._info
-

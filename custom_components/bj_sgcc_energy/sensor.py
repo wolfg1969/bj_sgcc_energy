@@ -1,5 +1,5 @@
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.const import(
+from homeassistant.const import (
     DEVICE_CLASS_ENERGY,
     ENERGY_KILO_WATT_HOUR,
     STATE_UNKNOWN
@@ -89,7 +89,7 @@ class SGCCSensor(SGCCBaseSensor):
         self._unique_id = f"{DOMAIN}.{cons_no}_{sensor_key}"
         self.entity_id = self._unique_id
 
-    def get_value(self, attribute = None):
+    def get_value(self, attribute=None):
         try:
             if attribute is None:
                 return self._coordinator.data.get(self._cons_no).get(self._sensor_key)
